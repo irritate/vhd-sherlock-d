@@ -556,10 +556,6 @@ int main(string[] args)
 		return(0);
 	}
 
-	// Initialise local variables
-	//memset(&vhd_footer_copy, 0, sizeof(vhd_footer_copy));
-	//memset(&vhd_footer, 0, sizeof(vhd_footer));
-
 	// Open VHD file
         try
         {
