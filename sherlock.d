@@ -608,7 +608,6 @@ int main(string[] args)
 			closeFile(vhdFile);
 			return(1);
 		}
-		//memcpy(&vhd_footer, &vhd_footer_copy, sizeof(vhd_footer));
                 vhd_footer = vhd_footer_copy;
 		if (verbose){
 			printf("...ok\n\n");
