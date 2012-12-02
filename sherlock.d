@@ -438,14 +438,11 @@ string dt2str(u_int32_t disktype)
 
 void	dump_vhdfooter(vhd_footer_t *foot){
 	// Local variables
-	char		cookie_str[MT_CKS+1];	// Temporary buffer
 
 	// Print a footer
 	printf("------------------------\n");
 	printf(" VHD Footer (%d bytes)\n", vhd_footer_t.sizeof);
 	printf("------------------------\n");
-	//snprintf(cookie_str.ptr, sizeof(cookie_str), "%s", foot.cookie);
-	//printf(" Cookie              = %s\n",             cookie_str.ptr);
 	writefln(" Cookie              = %s",             cast(string)foot.cookie);
 	writefln(" Features            = 0x%08X",         be32toh(foot.features));
 	printf(" File Format Version = 0x%08X\n",         be32toh(foot.ffversion));
@@ -475,14 +472,11 @@ void	dump_vhdfooter(vhd_footer_t *foot){
 
 void	dump_vhd_dyndiskhdr(vhd_ddhdr_t *ddhdr){
 	// Local variables
-	char		cookie_str[MT_CKS+1];	// Temporary buffer
 
 	// Print a footer
 	printf("--------------------------------------\n");
 	printf(" VHD Dynamic Disk Header (%d bytes)\n", vhd_ddhdr_t.sizeof);
 	printf("--------------------------------------\n");
-	//snprintf(cookie_str.ptr, sizeof(cookie_str), "%s", ddhdr.cookie);
-	//printf(" Cookie              = %s\n",             cookie_str);
 	writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
 	printf(" Data Offset         = 0x%016llx\n", be64toh(ddhdr.dataoffset));
 	printf(" Table Offset        = 0x%016llx\n", be64toh(ddhdr.tableoffset));
