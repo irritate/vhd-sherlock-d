@@ -699,7 +699,6 @@ dyndisk:
 	if (verbose){
 		printf("Positioning descriptor to read VHD footer copy...\n");
 	}
-	//if (vhdFile.seek(0, SEEK_FROM_START) < 0){
         try
         {
 	    //vhdFile.rewind();
@@ -803,7 +802,6 @@ dyndisk:
 	if (verbose){
 		printf("Positioning descriptor to read VHD batmap...\n");
 	}
-	//if (vhdFile.seek(be64toh(vhd_dyndiskhdr.tableoffset), SEEK_FROM_START) < 0){
         try
         {
 	    seekFile(vhdFile, be64toh(vhd_dyndiskhdr.tableoffset), SEEK_FROM_START);
