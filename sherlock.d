@@ -577,9 +577,6 @@ int main(string[] args)
                 writeln("Opening VHD file...");
             }
             vhdFile = openFile(args[optind]);
-            version(WindowsLargeFile)
-            {
-            }
         }
         catch (Exception e)
         {
