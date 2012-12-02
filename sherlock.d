@@ -166,6 +166,7 @@ void readStruct(T)(FileType file, out T structToFill)
         ReadFile(file, &structToFill, structToFill.sizeof, &numRead, null);
         if (numRead != structToFill.sizeof)
         {
+            //fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", structToFill.sizeof, numRead);
             throw new Exception("Didn't read a full struct!");
         }
     }
@@ -201,8 +202,6 @@ alias ubyte u_int8_t;
 alias ushort u_int16_t;
 alias uint u_int32_t;
 alias ulong u_int64_t;
-
-alias size_t ssize_t;
 
 uint sizeof(T)(T x)
 {
@@ -528,7 +527,6 @@ int main(string[] args)
 	// General
 	int		verbose = 0;		// Verbose level
 	int		i, j;			// Temporary integers
-	ssize_t		bytesread;		// Bytes read in a read operation
 
 	// Fetch arguments
         bool help;
@@ -603,7 +601,6 @@ int main(string[] args)
                 catch
                 {
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-			fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", sizeof(vhd_footer_copy), bytesread);
 			closeFile(vhdFile);
 			return(1);
 		}
@@ -653,7 +650,6 @@ int main(string[] args)
                 catch
                 {
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
-			fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", sizeof(vhd_footer), bytesread);
 			closeFile(vhdFile);
 			return(1);
 		}
@@ -730,7 +726,6 @@ dyndisk:
         catch
         {
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-		fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", sizeof(vhd_footer_copy), bytesread);
 		closeFile(vhdFile);
 		return(1);
 	}
@@ -761,7 +756,6 @@ dyndisk:
         catch
         {
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
-		fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", sizeof(vhd_dyndiskhdr), bytesread);
 		closeFile(vhdFile);
 		return(1);
 	}
@@ -840,13 +834,11 @@ dyndisk:
 		printf("...ok\n\n");
 		printf("Reading VHD batmap...\n");
 	}
-	//bytesread = read(vhdfd, batmap, sizeof(u_int32_t)*be32toh(vhd_dyndiskhdr.maxtabentries));
         try
         {
             readArray(vhdFile, batmap[]);
         }
         catch {
-	//if (bytesread != u_int32_t.sizeof*be32toh(vhd_dyndiskhdr.maxtabentries)){
 		fprintf(stderr.getFP(), "Error reading batmap.\n");
 		//free(batmap);
 		closeFile(vhdFile);
@@ -891,7 +883,6 @@ dyndisk:
 				closeFile(vhdFile);
 				return(1);
 			}
-			//bytesread = read(vhdfd, &secbitmap, MT_SECS);
                         try
                         {
                             readArray(vhdFile, secbitmap[]);
