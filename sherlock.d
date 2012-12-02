@@ -406,35 +406,34 @@ char *	size2h(u_int64_t disksize){
 }
 
 // Convert a disk type to a readable static string
-char *	dt2str(u_int32_t disktype){
-	// Local variables
-	static char	str[32];
+string dt2str(u_int32_t disktype)
+{
+    // Convert according to known disk types
+    string result;
+    switch (disktype)
+    {
+        case 0:
+            result = "None";
+            break;
+        case 2:
+            result = "Fixed hard disk";
+            break;
+        case 3:
+            result = "Dynamic hard disk";
+            break;
+        case 4:
+            result = "Differencing hard disk";
+            break;
+        case 1:
+        case 5:
+        case 6:
+            result = "Reserved (deprecated)";
+            break;
+        default:
+            result = "Unknown disk type";
+    }
 
-	// Convert according to known disk types
-	switch (be32toh(disktype)){
-		case 0:
-			snprintf(str.ptr, sizeof(str), "None");
-			break;
-		case 2:
-			snprintf(str.ptr, sizeof(str), "Fixed hard disk");
-			break;
-		case 3:
-			snprintf(str.ptr, sizeof(str), "Dynamic hard disk");
-			break;
-		case 4:
-			snprintf(str.ptr, sizeof(str), "Differencing hard disk");
-			break;
-		case 1:
-		case 5:
-		case 6:
-			snprintf(str.ptr, sizeof(str), "Reserved (deprecated)");
-			break;
-		default:
-			snprintf(str.ptr, sizeof(str), "Unknown disk type");
-	}
-
-	// Return a pointer to the static area
-	return(cast(char *)&str);
+    return result;
 }
 
 void	dump_vhdfooter(vhd_footer_t *foot){
@@ -466,7 +465,7 @@ void	dump_vhdfooter(vhd_footer_t *foot){
 	printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
 	printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
 	printf(" Disk Type           = 0x%08X\n",         be32toh(foot.disktype));
-	printf("                     = %s\n",             dt2str(foot.disktype));
+	writefln("                     = %s",             dt2str(be32toh(foot.disktype)));
 	printf(" Checksum            = 0x%08X\n",         be32toh(foot.checksum));
 	printf(" Unique ID           = %s\n",             uuidstr(foot.uniqueid));
 	printf(" Saved State         = 0x%02X\n",         foot.savedst);
