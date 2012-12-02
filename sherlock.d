@@ -63,6 +63,8 @@ FileType openFile(string fileName)
 {
     version(WindowsLargeFile)
     {
+        // Make sure it's zero-terminated for using it as a pointer.
+        fileName ~= 0;
         HANDLE hFile = CreateFileA(fileName.ptr, GENERIC_READ, 0, null, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, null);
         //writefln("hFile: %s", hFile);
         if (hFile == INVALID_HANDLE_VALUE)
