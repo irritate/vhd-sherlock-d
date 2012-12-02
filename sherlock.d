@@ -806,7 +806,7 @@ dyndisk:
             // to the data blocks.
             if (verbose)
             {
-                writeln("Extending BAT size to a sectory boundary...");
+                writeln("Extending BAT size to a sector boundary...");
                 writef("from %d (%d bytes) ", numEntries, 4*numEntries);
             }
             numEntries += (128 - (numEntries % 128));
