@@ -602,7 +602,6 @@ int main(string[] args)
 			closeFile(vhdFile);
 			return(1);
 		}
-		//if (strncmp(cast(char *)&(vhd_footer_copy.cookie), "conectix", 8)){
 		if (vhd_footer_copy.cookie != "conectix"){
 			fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
@@ -727,7 +726,6 @@ dyndisk:
 		closeFile(vhdFile);
 		return(1);
 	}
-	//if (strncmp(cast(char *)&(vhd_footer_copy.cookie), "conectix", 8)){
 	if (vhd_footer_copy.cookie != "conectix"){
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
@@ -757,7 +755,6 @@ dyndisk:
 		closeFile(vhdFile);
 		return(1);
 	}
-	//if (strncmp(cast(char *)&(vhd_dyndiskhdr.cookie), "cxsparse", 8)){
 	if (vhd_dyndiskhdr.cookie != "cxsparse"){
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
