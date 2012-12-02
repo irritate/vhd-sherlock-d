@@ -517,7 +517,6 @@ int main(string[] args)
         FileType        vhdFile;                // VHD file
 	vhd_footer_t	vhd_footer_copy;	// VHD footer copy (beginning of file)
 	vhd_ddhdr_t	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
-	//u_int32_t	*batmap;		// Block allocation table map
 	u_int32_t	batmap[];		// Block allocation table map
 	char		secbitmap[MT_SECS];	// Sector bitmap temporary buffer
 	vhd_footer_t	vhd_footer;		// VHD footer (end of file)
@@ -781,15 +780,6 @@ dyndisk:
 	if (verbose){
 		printf("Allocating batmap...\n");
 	}
-        /*
-	if ((batmap = cast(u_int32_t *)malloc(u_int32_t.sizeof*be32toh(vhd_dyndiskhdr.maxtabentries))) == null){
-		perror("malloc");
-		fprintf(stderr.getFP(), "Error allocating %u bytes for the batmap.\n", be32toh(vhd_dyndiskhdr.maxtabentries));
-		closeFile(vhdFile);
-		return(1);
-	}
-
-        */
         int numEntries = be32toh(vhd_dyndiskhdr.maxtabentries);
         if (numEntries % 128 != 0)
         {
@@ -825,7 +815,6 @@ dyndisk:
         catch {
 		perror("lseek");
 		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", be64toh(vhd_footer_copy.dataoffset));
-		//free(batmap);
 		closeFile(vhdFile);
 		return(1);
 	}
@@ -839,7 +828,6 @@ dyndisk:
         }
         catch {
 		fprintf(stderr.getFP(), "Error reading batmap.\n");
-		//free(batmap);
 		closeFile(vhdFile);
 		return(1);
 	}
@@ -878,7 +866,6 @@ dyndisk:
                         catch {
 				perror("lseek");
 				fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
-				//free(batmap);
 				closeFile(vhdFile);
 				return(1);
 			}
@@ -889,7 +876,6 @@ dyndisk:
                         catch
                         {
 				fprintf(stderr.getFP(), "Error reading sector bitmap (batmap[%d] at 0x%016X.\n", i, be32toh(batmap[i]));
-				//free(batmap);
 				closeFile(vhdFile);
 				return(1);
 			}
@@ -905,9 +891,6 @@ dyndisk:
 		}
 		
 	}
-
-	// Free batmap
-	//free(batmap);
 
 	// Print summary
 	//printf("VHD is OK\n");
