@@ -805,10 +805,16 @@ dyndisk:
             // but it's not really necessary to print it, since the maxtabentries
             // is the max usable, and it contains sector offsets into
             // to the data blocks.
-            writeln("Extending BAT size to a sectory boundary...");
-            writef("from %d (%d bytes) ", numEntries, 4*numEntries);
+            if (verbose)
+            {
+                writeln("Extending BAT size to a sectory boundary...");
+                writef("from %d (%d bytes) ", numEntries, 4*numEntries);
+            }
             numEntries += (128 - (numEntries % 128));
-            writefln("to %d (%d bytes)", numEntries, 4*numEntries);
+            if (verbose)
+            {
+                writefln("to %d (%d bytes)", numEntries, 4*numEntries);
+            }
         }
         batmap = new u_int32_t[numEntries];
 	if (verbose){
