@@ -514,8 +514,7 @@ int main(string[] args)
 	// Local variables
 
 	// VHD File specific
-	//int		vhdfd;			// VHD file descriptor
-        FileType        vhdFile;
+        FileType        vhdFile;                // VHD file
 	vhd_footer_t	vhd_footer_copy;	// VHD footer copy (beginning of file)
 	vhd_ddhdr_t	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
 	//u_int32_t	*batmap;		// Block allocation table map
