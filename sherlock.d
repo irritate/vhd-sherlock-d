@@ -35,7 +35,7 @@
 const string MT_PROGNAME = "VHD Sherlock";
 const int MT_PROGNAME_LEN = MT_PROGNAME.length;
 
-// Header files
+import vhd.structs;
 import std.stdio; // printf
 import std.bitmanip; // bigEndianToNative
 import std.getopt; // getopt
@@ -246,53 +246,6 @@ ulong be64toh(ulong x)
     return bigEndianToNative!(ulong, 8)(uval.bytes);
 }
 
-// VHD Footer structure
-struct vhd_footer_t {
-    align(1): // Packed
-	u_char		cookie[MT_CKS];	// Cookie
-	u_int32_t	features;	// Features
-	u_int32_t	ffversion;	// File format version
-	u_int64_t	dataoffset;	// Data offset	
-	u_int32_t	timestamp;	// Timestamp
-	//u_int32_t	creatorapp;	// Creator application
-	u_char[4]	creatorapp;	// Creator application
-	u_int32_t	creatorver;	// Creator version
-	u_int32_t	creatorhos;	// Creator host OS
-	u_int64_t	origsize;	// Original size
-	u_int64_t	currsize;	// Current size
-	u_int32_t	diskgeom;	// Disk geometry
-	u_int32_t	disktype;	// Disk type
-	u_int32_t	checksum;	// Checksum
-	u_char		uniqueid[16];	// Unique ID
-	u_char		savedst;	// Saved state
-	u_char		reserved[427];	// Reserved
-};
-
-// VHD Dynamic Disk Header structure
-struct vhd_ddhdr_t {
-    align(1): // Packed
-	u_char		cookie[MT_CKS];	// Cookie
-	u_int64_t	dataoffset;	// Data offset
-	u_int64_t	tableoffset;	// Table offset
-	u_int32_t	headerversion;	// Header version
-	u_int32_t	maxtabentries;	// Max table entries
-	u_int32_t	blocksize;	// Block size
-	u_int32_t	checksum;	// Checksum
-	u_char		parentuuid[16];	// Parent Unique ID
-	u_int32_t	parentts;	// Parent Timestamp
-	u_char		reserved1[4];	// Reserved
-	u_char		parentname[512];// Parent Unicode Name
-	u_char		parentloc1[24];	// Parent Locator Entry 1
-	u_char		parentloc2[24];	// Parent Locator Entry 2
-	u_char		parentloc3[24];	// Parent Locator Entry 3
-	u_char		parentloc4[24];	// Parent Locator Entry 4
-	u_char		parentloc5[24];	// Parent Locator Entry 5
-	u_char		parentloc6[24];	// Parent Locator Entry 6
-	u_char		parentloc7[24];	// Parent Locator Entry 7
-	u_char		parentloc8[24];	// Parent Locator Entry 8
-	u_char		reserved2[256];	// Reserved
-};
-
 // Auxiliary functions
 
 // Print help
@@ -436,12 +389,12 @@ string dt2str(u_int32_t disktype)
     return result;
 }
 
-void	dump_vhdfooter(vhd_footer_t *foot){
+void	dump_vhdfooter(VHDFooter *foot){
 	// Local variables
 
 	// Print a footer
 	printf("------------------------\n");
-	printf(" VHD Footer (%d bytes)\n", vhd_footer_t.sizeof);
+	printf(" VHD Footer (%d bytes)\n", VHDFooter.sizeof);
 	printf("------------------------\n");
 	writefln(" Cookie              = %s",             cast(string)foot.cookie);
 	writefln(" Features            = 0x%08X",         be32toh(foot.features));
@@ -470,12 +423,12 @@ void	dump_vhdfooter(vhd_footer_t *foot){
 	printf("===============================================\n");
 }
 
-void	dump_vhd_dyndiskhdr(vhd_ddhdr_t *ddhdr){
+void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr){
 	// Local variables
 
 	// Print a footer
 	printf("--------------------------------------\n");
-	printf(" VHD Dynamic Disk Header (%d bytes)\n", vhd_ddhdr_t.sizeof);
+	printf(" VHD Dynamic Disk Header (%d bytes)\n", VHDDynamicDiskHeader.sizeof);
 	printf("--------------------------------------\n");
 	writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
 	printf(" Data Offset         = 0x%016llx\n", be64toh(ddhdr.dataoffset));
@@ -508,11 +461,11 @@ int main(string[] args)
 
 	// VHD File specific
         FileType        vhdFile;                // VHD file
-	vhd_footer_t	vhd_footer_copy;	// VHD footer copy (beginning of file)
-	vhd_ddhdr_t	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
+	VHDFooter	vhd_footer_copy;	// VHD footer copy (beginning of file)
+	VHDDynamicDiskHeader	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
 	u_int32_t	batmap[];		// Block allocation table map
 	char		secbitmap[MT_SECS];	// Sector bitmap temporary buffer
-	vhd_footer_t	vhd_footer;		// VHD footer (end of file)
+	VHDFooter	vhd_footer;		// VHD footer (end of file)
 	char		copyonly = 0;
 
 	// General
