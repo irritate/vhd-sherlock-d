@@ -112,11 +112,6 @@ align(1): // Packed
 
 // Helper functions.
 
-uint sizeof(T)(T x)
-{
-    return x.sizeof;
-}
-
 // Extract cylinder from the 4 byte disk geometry field
 ushort dg2cyli(int diskgeom){
 	return(cast(ushort)((diskgeom&0xFFFF0000)>>16));
@@ -133,59 +128,75 @@ ubyte	dg2sptc(int diskgeom){
 }
 
 // Convert a disk size to a human readable static string
-char *	size2h(ulong disksize){
-	// Local variables
-	static char	str[32];
-	ushort	div = 0;
-	ulong	rem = 0;
+string size2h(ulong disksize)
+{
+    // Local variables
+    string str;
+    ushort    div = 0;
+    ulong    rem = 0;
 
-	// Loop dividing disksize
-	while (((disksize / 1024) > 0)&&(div<4)){
-		div++;
-		rem = disksize % 1024;
-		disksize /= 1024;
-		if (rem){
-			break;
-		}
-	}
+    // Loop dividing disksize
+    while (((disksize / 1024) > 0) && (div < 4))
+    {
+        div++;
+        rem = disksize % 1024;
+        disksize /= 1024;
+        if (rem)
+        {
+            break;
+        }
+    }
 
-	// Find out unit and fill str accordingly
-	switch (div){
-		case 0:
-			snprintf(str.ptr, sizeof(str), "%lld B", disksize);
-			break;
-		case 1:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld KiB + %lld B", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld KiB", disksize);
-			}
-			break;
-		case 2:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld MiB + %lld KiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld MiB", disksize);
-			}
-			break;
-		case 3:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld GiB + %lld MiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld GiB", disksize);
-			}
-			break;
-		default:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld TiB + %lld GiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld TiB", disksize);
-			}
-			break;
-	}
+    import std.string;
+    // Find out unit and fill str accordingly
+    switch (div)
+    {
+        case 0:
+            str = format("%d B", disksize);
+            break;
+        case 1:
+            if (rem)
+            {
+                str = format("%d KB + %d B", disksize, rem);
+            }
+            else
+            {
+                str = format("%d KB", disksize);
+            }
+            break;
+        case 2:
+            if (rem)
+            {
+                str = format("%d MB + %d KB", disksize, rem);
+            }
+            else
+            {
+                str = format("%d MB", disksize);
+            }
+            break;
+        case 3:
+            if (rem)
+            {
+                str = format("%d GB + %d MB", disksize, rem);
+            }
+            else
+            {
+                str = format("%d GB", disksize);
+            }
+            break;
+        default:
+            if (rem)
+            {
+                str = format("%d TB + %d GB", disksize, rem);
+            }
+            else
+            {
+                str = format("%d TB", disksize);
+            }
+            break;
+    }
 
-	// Return a poniter to the static area
-	return(cast(char *)&str);
+    return str;
 }
 
 // Convert a disk type to a readable static string
@@ -237,9 +248,9 @@ void	dump_vhdfooter(VHDFooter *foot){
 	printf(" Creator Version     = 0x%08X\n",         foot.creatorver);
 	printf(" Creator Host OS     = 0x%08X\n",         foot.creatorhos);
 	printf(" Original Size       = 0x%016llx\n",      foot.origsize);
-	printf("                     = %s\n",             size2h(foot.origsize));
+	writefln("                     = %s",             size2h(foot.origsize));
 	printf(" Current Size        = 0x%016llx\n",      foot.currsize);
-	printf("                     = %s\n",             size2h(foot.currsize));
+	writefln("                     = %s",             size2h(foot.currsize));
 	printf(" Disk Geometry       = 0x%08X\n",         foot.diskgeom);
 	printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
 	//printf("           Cylinders = %hu\n",            foot.diskgeom.cylinders);
