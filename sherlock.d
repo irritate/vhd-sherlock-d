@@ -78,23 +78,6 @@ uint be32toh(uint x)
     return bigEndianToNative!uint(uval.bytes);
 }
 
-ulong be64toh(ulong x)
-{
-    union u
-    {
-        ubyte[8] bytes;
-        ulong val;
-    }; 
-    u uval;
-    uval.val = x;
-    debug(endian) writefln("be64toh: %s", x);
-    debug(endian) writefln("be64toh: %s", uval.bytes);
-    debug(endian) writefln("be64toh: %s", bigEndianToNative!ulong(uval.bytes));
-    //ubyte[8] bytes = cast(ubyte[]) x;
-    //return bigEndianToNative!(ulong, 8)(bytes);
-    return bigEndianToNative!(ulong, 8)(uval.bytes);
-}
-
 // Auxiliary functions
 
 // Print help
