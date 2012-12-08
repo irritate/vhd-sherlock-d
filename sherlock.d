@@ -41,6 +41,7 @@ import std.stdio; // printf
 import std.bitmanip; // bigEndianToNative
 import std.getopt; // getopt
 import std.file;
+import std.uuid; // UUID
 
 // Global definitions
 const int MT_SECS = 512; // Size of a sector
@@ -108,28 +109,6 @@ void usage(string progname)
     writefln("       -v		Increase verbose level (may be used multiple times).");
     writefln("       -c		Read VHD footer *copy* only (for corrupted VHDs with no footer)");
     writefln("       <file>		VHD file to examine");
-}
-
-// Convert a 16 bit uuid to a static string
-char *	uuidstr(u_char uuid[16]){
-	// Local variables
-	static u_char	str[37];		// String representation of UUID
-	char		*ptr;			// Temporary pointer
-	int		i;			// Temporary integer
-
-	// Fill str
-	ptr = cast(char *)&str;
-	for (i=0; i<16; i++){
-		sprintf(ptr, "%02x", uuid[i]);
-		ptr+=2;
-		if ((i==3) || (i==5) || (i==7) || (i==9)){
-			sprintf(ptr++, "-");
-		}
-	}
-	*ptr=0;
-
-	// Return a pointer to the static area
-	return(cast(char *)&str);
 }
 
 // Extract cylinder from the 4 byte disk geometry field
@@ -265,7 +244,7 @@ void	dump_vhdfooter(VHDFooter *foot){
 	printf(" Disk Type           = 0x%08X\n",         be32toh(foot.disktype));
 	writefln("                     = %s",             dt2str(be32toh(foot.disktype)));
 	printf(" Checksum            = 0x%08X\n",         be32toh(foot.checksum));
-	printf(" Unique ID           = %s\n",             uuidstr(foot.uniqueid));
+	writefln(" Unique ID           = %s",             UUID(foot.uniqueid));
 	printf(" Saved State         = 0x%02X\n",         foot.savedst);
 	printf(" Reserved            = <...427 bytes...>\n");
 	printf("===============================================\n");
@@ -285,7 +264,7 @@ void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr){
 	printf(" Max Table Entries   = 0x%08X\n",         be32toh(ddhdr.maxtabentries));
 	printf(" Block Size          = 0x%08X\n",         be32toh(ddhdr.blocksize));
 	printf(" Checksum            = 0x%08X\n",         be32toh(ddhdr.checksum));
-	printf(" Parent UUID         = %s\n",             uuidstr(ddhdr.parentuuid));
+	writefln(" Parent UUID         = %s",             UUID(ddhdr.parentuuid));
 	printf(" Parent TS           = 0x%08X\n",         be32toh(ddhdr.parentts));
 	printf("                       %u (10)\n",        be32toh(ddhdr.parentts));
 	printf(" Reserved            = <...4 bytes...>\n");
