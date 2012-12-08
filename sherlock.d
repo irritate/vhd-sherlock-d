@@ -43,7 +43,6 @@ import std.getopt; // getopt
 import std.file;
 
 // Global definitions
-const int MT_CKS = 8; // Size of "cookie" entries in headers
 const int MT_SECS = 512; // Size of a sector
 
 alias ubyte u_char;
