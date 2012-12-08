@@ -41,7 +41,6 @@ import std.stdio; // printf
 import std.bitmanip; // bigEndianToNative
 import std.getopt; // getopt
 import std.file;
-import std.uuid; // UUID
 
 // Global definitions
 const int MT_SECS = 512; // Size of a sector
@@ -51,11 +50,6 @@ alias ubyte u_int8_t;
 alias ushort u_int16_t;
 alias uint u_int32_t;
 alias ulong u_int64_t;
-
-uint sizeof(T)(T x)
-{
-    return x.sizeof;
-}
 
 uint be32toh(uint x)
 {
@@ -93,176 +87,6 @@ void usage(string progname)
     writefln("       -c		Read VHD footer *copy* only (for corrupted VHDs with no footer)");
     writefln("       <file>		VHD file to examine");
 }
-
-// Extract cylinder from the 4 byte disk geometry field
-u_int16_t dg2cyli(u_int32_t diskgeom){
-	return(cast(u_int16_t)((diskgeom&0xFFFF0000)>>16));
-}
-
-// Extract heads from the 4 byte disk geometry field
-u_int8_t	dg2head(u_int32_t diskgeom){
-	return(cast(u_int8_t)((diskgeom&0x0000FF00)>>8));
-}
-
-// Extract sectors per track/cylinder from the 4 byte disk geometry field
-u_int8_t	dg2sptc(u_int32_t diskgeom){
-	return(cast(u_int8_t)((diskgeom&0x000000FF)));
-}
-
-// Convert a disk size to a human readable static string
-char *	size2h(u_int64_t disksize){
-	// Local variables
-	static char	str[32];
-	u_int16_t	div = 0;
-	u_int64_t	rem = 0;
-
-	// Loop dividing disksize
-	while (((disksize / 1024) > 0)&&(div<4)){
-		div++;
-		rem = disksize % 1024;
-		disksize /= 1024;
-		if (rem){
-			break;
-		}
-	}
-
-	// Find out unit and fill str accordingly
-	switch (div){
-		case 0:
-			snprintf(str.ptr, sizeof(str), "%lld B", disksize);
-			break;
-		case 1:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld KiB + %lld B", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld KiB", disksize);
-			}
-			break;
-		case 2:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld MiB + %lld KiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld MiB", disksize);
-			}
-			break;
-		case 3:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld GiB + %lld MiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld GiB", disksize);
-			}
-			break;
-		default:
-			if (rem){
-				snprintf(str.ptr, sizeof(str), "%lld TiB + %lld GiB", disksize, rem);
-			}else{
-				snprintf(str.ptr, sizeof(str), "%lld TiB", disksize);
-			}
-			break;
-	}
-
-	// Return a poniter to the static area
-	return(cast(char *)&str);
-}
-
-// Convert a disk type to a readable static string
-string dt2str(u_int32_t disktype)
-{
-    // Convert according to known disk types
-    string result;
-    switch (disktype)
-    {
-        case 0:
-            result = "None";
-            break;
-        case 2:
-            result = "Fixed hard disk";
-            break;
-        case 3:
-            result = "Dynamic hard disk";
-            break;
-        case 4:
-            result = "Differencing hard disk";
-            break;
-        case 1:
-        case 5:
-        case 6:
-            result = "Reserved (deprecated)";
-            break;
-        default:
-            result = "Unknown disk type";
-    }
-
-    return result;
-}
-
-void	dump_vhdfooter(VHDFooter *foot){
-	// Local variables
-
-	// Print a footer
-	printf("------------------------\n");
-	printf(" VHD Footer (%d bytes)\n", VHDFooter.sizeof);
-	printf("------------------------\n");
-	writefln(" Cookie              = %s",             cast(string)foot.cookie);
-	writefln(" Features            = 0x%08X",         foot.features);
-	printf(" File Format Version = 0x%08X\n",         foot.ffversion);
-	printf(" Data Offset         = 0x%016llx\n",      foot.dataoffset);
-	printf(" Time Stamp          = 0x%08X\n",         foot.timestamp);
-	//printf(" Creator Application = 0x%08X\n",       foot.creatorapp);
-	writefln(" Creator Application = %s",         cast(string)(foot.creatorapp));
-        // d2v == disk2vhd
-	printf(" Creator Version     = 0x%08X\n",         foot.creatorver);
-	printf(" Creator Host OS     = 0x%08X\n",         foot.creatorhos);
-	printf(" Original Size       = 0x%016llx\n",      foot.origsize);
-	printf("                     = %s\n",             size2h(foot.origsize));
-	printf(" Current Size        = 0x%016llx\n",      foot.currsize);
-	printf("                     = %s\n",             size2h(foot.currsize));
-	printf(" Disk Geometry       = 0x%08X\n",         foot.diskgeom);
-	printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
-	//printf("           Cylinders = %hu\n",            foot.diskgeom.cylinders);
-	printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
-	//printf("               Heads = %hhu\n",           foot.diskgeom.heads);
-	printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
-	//printf("       Sectors/Track = %hhu\n",           foot.diskgeom.sectorsPerTrack);
-	printf(" Disk Type           = 0x%08X\n",         foot.disktype);
-	writefln("                     = %s",             dt2str(foot.disktype));
-	printf(" Checksum            = 0x%08X\n",         foot.checksum);
-	writefln(" Unique ID           = %s",             UUID(foot.uniqueid));
-	printf(" Saved State         = 0x%02X\n",         foot.savedst);
-	printf(" Reserved            = <...427 bytes...>\n");
-	printf("===============================================\n");
-}
-
-void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr){
-	// Local variables
-
-	// Print a footer
-	printf("--------------------------------------\n");
-	printf(" VHD Dynamic Disk Header (%d bytes)\n", VHDDynamicDiskHeader.sizeof);
-	printf("--------------------------------------\n");
-	writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
-	printf(" Data Offset         = 0x%016llx\n",      ddhdr.dataoffset);
-	printf(" Table Offset        = 0x%016llx\n",      ddhdr.tableoffset);
-	printf(" Header Version      = 0x%08X\n",         ddhdr.headerversion);
-	printf(" Max Table Entries   = 0x%08X\n",         ddhdr.maxtabentries);
-	printf(" Block Size          = 0x%08X\n",         ddhdr.blocksize);
-	printf(" Checksum            = 0x%08X\n",         ddhdr.checksum);
-	writefln(" Parent UUID         = %s",             UUID(ddhdr.parentuuid));
-	printf(" Parent TS           = 0x%08X\n",         ddhdr.parentts);
-	printf("                       %u (10)\n",        ddhdr.parentts);
-	printf(" Reserved            = <...4 bytes...>\n");
-	printf(" Parent Unicode Name = <...512 bytes...>\n");
-	printf(" Parent Loc Entry 1  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 2  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 3  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 4  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 5  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 6  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 7  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 8  = <...24 bytes...>\n");
-	printf("===============================================\n");
-}
-
 
 // Main function
 int main(string[] args)
