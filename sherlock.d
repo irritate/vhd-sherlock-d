@@ -133,9 +133,6 @@ char *	size2h(u_int64_t disksize){
 	u_int16_t	div = 0;
 	u_int64_t	rem = 0;
 
-	// Correct endianess
-	disksize = be64toh(disksize);
-
 	// Loop dividing disksize
 	while (((disksize / 1024) > 0)&&(div<4)){
 		div++;
@@ -224,26 +221,29 @@ void	dump_vhdfooter(VHDFooter *foot){
 	printf(" VHD Footer (%d bytes)\n", VHDFooter.sizeof);
 	printf("------------------------\n");
 	writefln(" Cookie              = %s",             cast(string)foot.cookie);
-	writefln(" Features            = 0x%08X",         be32toh(foot.features));
-	printf(" File Format Version = 0x%08X\n",         be32toh(foot.ffversion));
-	printf(" Data Offset         = 0x%016llx\n", be64toh(foot.dataoffset));
-	printf(" Time Stamp          = 0x%08X\n",         be32toh(foot.timestamp));
-	//printf(" Creator Application = 0x%08X\n",         be32toh(foot.creatorapp));
+	writefln(" Features            = 0x%08X",         foot.features);
+	printf(" File Format Version = 0x%08X\n",         foot.ffversion);
+	printf(" Data Offset         = 0x%016llx\n",      foot.dataoffset);
+	printf(" Time Stamp          = 0x%08X\n",         foot.timestamp);
+	//printf(" Creator Application = 0x%08X\n",       foot.creatorapp);
 	writefln(" Creator Application = %s",         cast(string)(foot.creatorapp));
         // d2v == disk2vhd
-	printf(" Creator Version     = 0x%08X\n",         be32toh(foot.creatorver));
-	printf(" Creator Host OS     = 0x%08X\n",         be32toh(foot.creatorhos));
-	printf(" Original Size       = 0x%016llx\n", be64toh(foot.origsize));
+	printf(" Creator Version     = 0x%08X\n",         foot.creatorver);
+	printf(" Creator Host OS     = 0x%08X\n",         foot.creatorhos);
+	printf(" Original Size       = 0x%016llx\n",      foot.origsize);
 	printf("                     = %s\n",             size2h(foot.origsize));
-	printf(" Current Size        = 0x%016llx\n", be64toh(foot.currsize));
+	printf(" Current Size        = 0x%016llx\n",      foot.currsize);
 	printf("                     = %s\n",             size2h(foot.currsize));
-	printf(" Disk Geometry       = 0x%08X\n",         be32toh(foot.diskgeom));
-	printf("           Cylinders = %hu\n",            dg2cyli(be32toh(foot.diskgeom)));
-	printf("               Heads = %hhu\n",           dg2head(be32toh(foot.diskgeom)));
-	printf("       Sectors/Track = %hhu\n",           dg2sptc(be32toh(foot.diskgeom)));
-	printf(" Disk Type           = 0x%08X\n",         be32toh(foot.disktype));
-	writefln("                     = %s",             dt2str(be32toh(foot.disktype)));
-	printf(" Checksum            = 0x%08X\n",         be32toh(foot.checksum));
+	printf(" Disk Geometry       = 0x%08X\n",         foot.diskgeom);
+	printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
+	//printf("           Cylinders = %hu\n",            foot.diskgeom.cylinders);
+	printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
+	//printf("               Heads = %hhu\n",           foot.diskgeom.heads);
+	printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
+	//printf("       Sectors/Track = %hhu\n",           foot.diskgeom.sectorsPerTrack);
+	printf(" Disk Type           = 0x%08X\n",         foot.disktype);
+	writefln("                     = %s",             dt2str(foot.disktype));
+	printf(" Checksum            = 0x%08X\n",         foot.checksum);
 	writefln(" Unique ID           = %s",             UUID(foot.uniqueid));
 	printf(" Saved State         = 0x%02X\n",         foot.savedst);
 	printf(" Reserved            = <...427 bytes...>\n");
@@ -258,15 +258,15 @@ void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr){
 	printf(" VHD Dynamic Disk Header (%d bytes)\n", VHDDynamicDiskHeader.sizeof);
 	printf("--------------------------------------\n");
 	writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
-	printf(" Data Offset         = 0x%016llx\n", be64toh(ddhdr.dataoffset));
-	printf(" Table Offset        = 0x%016llx\n", be64toh(ddhdr.tableoffset));
-	printf(" Header Version      = 0x%08X\n",         be32toh(ddhdr.headerversion));
-	printf(" Max Table Entries   = 0x%08X\n",         be32toh(ddhdr.maxtabentries));
-	printf(" Block Size          = 0x%08X\n",         be32toh(ddhdr.blocksize));
-	printf(" Checksum            = 0x%08X\n",         be32toh(ddhdr.checksum));
+	printf(" Data Offset         = 0x%016llx\n",      ddhdr.dataoffset);
+	printf(" Table Offset        = 0x%016llx\n",      ddhdr.tableoffset);
+	printf(" Header Version      = 0x%08X\n",         ddhdr.headerversion);
+	printf(" Max Table Entries   = 0x%08X\n",         ddhdr.maxtabentries);
+	printf(" Block Size          = 0x%08X\n",         ddhdr.blocksize);
+	printf(" Checksum            = 0x%08X\n",         ddhdr.checksum);
 	writefln(" Parent UUID         = %s",             UUID(ddhdr.parentuuid));
-	printf(" Parent TS           = 0x%08X\n",         be32toh(ddhdr.parentts));
-	printf("                       %u (10)\n",        be32toh(ddhdr.parentts));
+	printf(" Parent TS           = 0x%08X\n",         ddhdr.parentts);
+	printf("                       %u (10)\n",        ddhdr.parentts);
 	printf(" Reserved            = <...4 bytes...>\n");
 	printf(" Parent Unicode Name = <...512 bytes...>\n");
 	printf(" Parent Loc Entry 1  = <...24 bytes...>\n");
@@ -439,7 +439,7 @@ int main(string[] args)
 	if (verbose){
 		printf("Detecting disk type...\n");
 	}
-	switch(be32toh(vhd_footer.disktype)){
+	switch(vhd_footer.disktype){
 		case 2:
 			if (verbose){
 				printf("===> Fixed hard disk detected.\n...ok\n\n");
@@ -458,7 +458,7 @@ int main(string[] args)
 			goto dyndisk;
 			break;
 		default:
-			printf("===> Unknown VHD disk type: %d\n", be32toh(vhd_footer.disktype));
+			printf("===> Unknown VHD disk type: %d\n", vhd_footer.disktype);
 			break;
 	}
 	goto outlabel;
@@ -544,7 +544,7 @@ dyndisk:
 	if (verbose){
 		printf("Allocating batmap...\n");
 	}
-        int numEntries = be32toh(vhd_dyndiskhdr.maxtabentries);
+        int numEntries = vhd_dyndiskhdr.maxtabentries;
         if (numEntries % 128 != 0)
         {
             // "The BAT is always extended to a sector boundary."
@@ -573,11 +573,11 @@ dyndisk:
 	}
         try
         {
-	    seekFile(vhdFile, be64toh(vhd_dyndiskhdr.tableoffset), SEEK_FROM_START);
+	    seekFile(vhdFile, vhd_dyndiskhdr.tableoffset, SEEK_FROM_START);
         }
         catch {
 		perror("lseek");
-		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", be64toh(vhd_footer_copy.dataoffset));
+		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
 		closeFile(vhdFile);
 		return(1);
 	}
@@ -601,9 +601,9 @@ dyndisk:
 	// Dump Batmap
 	if (verbose > 2){
 		printf("----------------------------\n");
-		printf(" VHD Block Allocation Table (%u / %u entries)\n", be32toh(vhd_dyndiskhdr.maxtabentries), batmap.length);
+		printf(" VHD Block Allocation Table (%u / %u entries)\n", vhd_dyndiskhdr.maxtabentries, batmap.length);
 		printf("----------------------------\n");
-		//for (i=0; i<be32toh(vhd_dyndiskhdr.maxtabentries); i++){
+		//for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++){
                 foreach(k, x; batmap)
                 {
 			//printf("batmap[%d] = 0x%08X\n", i, be32toh(batmap[i]));
@@ -617,7 +617,7 @@ dyndisk:
 		printf("------------------------------\n");
 		printf(" VHD Sector Bitmaps per Block\n");
 		printf("------------------------------\n");
-		for (i=0; i<be32toh(vhd_dyndiskhdr.maxtabentries); i++){
+		for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++){
 			if (batmap[i] == 0xFFFFFFFF){
 				printf(" block[%d] = <...not allocated...>\n", i);
 				continue;
