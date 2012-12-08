@@ -113,17 +113,17 @@ void usage(string progname)
 
 // Extract cylinder from the 4 byte disk geometry field
 u_int16_t dg2cyli(u_int32_t diskgeom){
-	return(cast(u_int16_t)((be32toh(diskgeom)&0xFFFF0000)>>16));
+	return(cast(u_int16_t)((diskgeom&0xFFFF0000)>>16));
 }
 
 // Extract heads from the 4 byte disk geometry field
 u_int8_t	dg2head(u_int32_t diskgeom){
-	return(cast(u_int8_t)((be32toh(diskgeom)&0x0000FF00)>>8));
+	return(cast(u_int8_t)((diskgeom&0x0000FF00)>>8));
 }
 
 // Extract sectors per track/cylinder from the 4 byte disk geometry field
 u_int8_t	dg2sptc(u_int32_t diskgeom){
-	return(cast(u_int8_t)((be32toh(diskgeom)&0x000000FF)));
+	return(cast(u_int8_t)((diskgeom&0x000000FF)));
 }
 
 // Convert a disk size to a human readable static string
@@ -238,9 +238,9 @@ void	dump_vhdfooter(VHDFooter *foot){
 	printf(" Current Size        = 0x%016llx\n", be64toh(foot.currsize));
 	printf("                     = %s\n",             size2h(foot.currsize));
 	printf(" Disk Geometry       = 0x%08X\n",         be32toh(foot.diskgeom));
-	printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
-	printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
-	printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
+	printf("           Cylinders = %hu\n",            dg2cyli(be32toh(foot.diskgeom)));
+	printf("               Heads = %hhu\n",           dg2head(be32toh(foot.diskgeom)));
+	printf("       Sectors/Track = %hhu\n",           dg2sptc(be32toh(foot.diskgeom)));
 	printf(" Disk Type           = 0x%08X\n",         be32toh(foot.disktype));
 	writefln("                     = %s",             dt2str(be32toh(foot.disktype)));
 	printf(" Checksum            = 0x%08X\n",         be32toh(foot.checksum));
