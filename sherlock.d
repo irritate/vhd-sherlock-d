@@ -408,7 +408,7 @@ dyndisk:
 		return(1);
 	}
 	if (verbose){
-		printf("...ok\n");
+		printf("...ok\n\n");
 	}
 
 	// Dump Batmap
