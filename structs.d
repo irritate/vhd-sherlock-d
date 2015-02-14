@@ -113,17 +113,20 @@ align(1): // Packed
 // Helper functions.
 
 // Extract cylinder from the 4 byte disk geometry field
-ushort dg2cyli(int diskgeom){
+ushort dg2cyli(int diskgeom)
+{
 	return(cast(ushort)((diskgeom&0xFFFF0000)>>16));
 }
 
 // Extract heads from the 4 byte disk geometry field
-ubyte	dg2head(int diskgeom){
+ubyte	dg2head(int diskgeom)
+{
 	return(cast(ubyte)((diskgeom&0x0000FF00)>>8));
 }
 
 // Extract sectors per track/cylinder from the 4 byte disk geometry field
-ubyte	dg2sptc(int diskgeom){
+ubyte	dg2sptc(int diskgeom)
+{
 	return(cast(ubyte)((diskgeom&0x000000FF)));
 }
 
@@ -230,7 +233,8 @@ string dt2str(int disktype)
     return result;
 }
 
-void	dump_vhdfooter(VHDFooter *foot){
+void	dump_vhdfooter(VHDFooter *foot)
+{
 	// Local variables
 
 	// Print a footer
@@ -267,7 +271,8 @@ void	dump_vhdfooter(VHDFooter *foot){
 	printf("===============================================\n");
 }
 
-void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr){
+void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr)
+{
 	// Local variables
 
 	// Print a footer

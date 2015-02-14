@@ -126,7 +126,8 @@ int main(string[] args)
         else if (copy)
         {
                 // Read VHD footer copy only
-                if (copyonly){
+                if (copyonly)
+                {
                         fprintf(stderr.getFP(), "Error! -c can only be used once.\n");
                         usage(args[0]);
                         return(1);
@@ -134,7 +135,8 @@ int main(string[] args)
                 copyonly = 1;
         }
 
-        if (verbose) {
+        if (verbose)
+        {
             writefln("verbose = %d", verbose);
         }
 
@@ -176,12 +178,14 @@ int main(string[] args)
                 writeln("...ok");
             }
         }
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 	}
 
 	// Read the VHD footer
-	if (copyonly){
+	if (copyonly)
+        {
 		if (verbose)
                 {
                     printf("Reading VHD footer copy exclusively...\n");
@@ -195,20 +199,26 @@ int main(string[] args)
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
 			return(1);
 		}
-		if (vhd_footer_copy.cookie != "conectix"){
+		if (vhd_footer_copy.cookie != "conectix")
+                {
 			fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
 			return(1);
 		}
                 vhd_footer = vhd_footer_copy;
-		if (verbose){
+		if (verbose)
+                {
 			printf("...ok\n\n");
 		}
-                //if (verbose > 1){
+                //if (verbose > 1)
+                //{
                 //    dump_vhdfooter(&vhd_footer);
                 //}
-	}else{
-		if (verbose){
+	}
+        else
+        {
+		if (verbose)
+                {
 			printf("Positioning descriptor to VHD footer...\n");
 		}
                 try
@@ -226,7 +236,8 @@ int main(string[] args)
 			fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the footer.\n");
 			return(1);
 		}
-		if (verbose){
+		if (verbose)
+                {
 			printf("...ok\n\n");
 			printf("Reading VHD footer...\n");
 		}
@@ -240,39 +251,47 @@ int main(string[] args)
 			return(1);
 		}
 
-		if (vhd_footer.cookie != "conectix"){
+		if (vhd_footer.cookie != "conectix")
+                {
 			fprintf(stderr.getFP(), "Corrupt disk detected after reading VHD footer.\n");
 			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
 			return(1);
 		}
-		if (verbose){
+		if (verbose)
+                {
 			printf("...ok\n\n");
 		}
 
 		// Dump footer
-		if (verbose > 1){
+		if (verbose > 1)
+                {
 			dump_vhdfooter(&vhd_footer);
 		}
 	}
 
 	// Check type of disk
-	if (verbose){
+	if (verbose)
+        {
 		printf("Detecting disk type...\n");
 	}
-	switch(vhd_footer.disktype){
+	switch(vhd_footer.disktype)
+        {
 		case 2:
-			if (verbose){
+			if (verbose)
+                        {
 				printf("===> Fixed hard disk detected.\n...ok\n\n");
 			}
 			break;
 		case 3:
-			if (verbose){
+			if (verbose)
+                        {
 				printf("===> Dynamic hard disk detected.\n...ok\n\n");
 			}
 			goto dyndisk;
 			//break;
 		case 4:
-			if (verbose){
+			if (verbose)
+                        {
 				printf("===> Differencing hard disk detected.\n...ok\n\n");
 			}
 			goto dyndisk;
@@ -285,7 +304,8 @@ int main(string[] args)
 
 dyndisk:
 	// Read the VHD footer copy
-	if (verbose){
+	if (verbose)
+        {
 		printf("Positioning descriptor to read VHD footer copy...\n");
 	}
         try
@@ -293,12 +313,14 @@ dyndisk:
 	    //vhdFile.rewind();
 	    seekFile(vhdFile, 0, SEEK_FROM_START);
         }
-        catch {
+        catch
+        {
 		perror("lseek");
 		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the file start.\n");
 		return(1);
 	}
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 		printf("Reading VHD footer copy...\n");
 	}
@@ -311,22 +333,26 @@ dyndisk:
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
 		return(1);
 	}
-	if (vhd_footer_copy.cookie != "conectix"){
+	if (vhd_footer_copy.cookie != "conectix")
+        {
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
 		return(1);
 	}
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 	}
 
 	// Dump footer copy
-	if (verbose > 1){
+	if (verbose > 1)
+        {
 		dump_vhdfooter(&vhd_footer);
 	}
 
 	// Read the VHD dynamic disk header
-	if (verbose){
+	if (verbose)
+        {
 		printf("Reading VHD dynamic disk header...\n");
 	}
         try
@@ -338,17 +364,20 @@ dyndisk:
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
 		return(1);
 	}
-	if (vhd_dyndiskhdr.cookie != "cxsparse"){
+	if (vhd_dyndiskhdr.cookie != "cxsparse")
+        {
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
 		return(1);
 	}
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 	}
 
 	// Dump VHD dynamic disk header
-	if (verbose > 1){
+	if (verbose > 1)
+        {
 		dump_vhd_dyndiskhdr(&vhd_dyndiskhdr);
 	}
 
@@ -356,7 +385,8 @@ dyndisk:
         assert(vhd_footer == vhd_footer_copy);
 
 	// Allocate Batmap
-	if (verbose){
+	if (verbose)
+        {
 		printf("Allocating batmap...\n");
 	}
         numEntries = vhd_dyndiskhdr.maxtabentries;
@@ -378,24 +408,28 @@ dyndisk:
             }
         }
         batmap = new u_int32_t[numEntries];
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 	}
 
 	// Read batmap
-	if (verbose){
+	if (verbose)
+        {
 		printf("Positioning descriptor to read VHD batmap...\n");
 	}
         try
         {
 	    seekFile(vhdFile, vhd_dyndiskhdr.tableoffset, SEEK_FROM_START);
         }
-        catch {
+        catch
+        {
 		perror("lseek");
 		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
 		return(1);
 	}
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 		printf("Reading VHD batmap...\n");
 	}
@@ -403,20 +437,23 @@ dyndisk:
         {
             readArray(vhdFile, batmap[]);
         }
-        catch {
+        catch
+        {
 		fprintf(stderr.getFP(), "Error reading batmap.\n");
 		return(1);
 	}
-	if (verbose){
+	if (verbose)
+        {
 		printf("...ok\n\n");
 	}
 
 	// Dump Batmap
-	if (verbose > 2){
+	if (verbose > 2)
+        {
 		printf("----------------------------\n");
 		printf(" VHD Block Allocation Table (%u / %u entries)\n", vhd_dyndiskhdr.maxtabentries, batmap.length);
 		printf("----------------------------\n");
-		//for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++){
+		//for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
                 foreach(k, x; batmap)
                 {
 			//printf("batmap[%d] = 0x%08X\n", i, be32toh(batmap[i]));
@@ -426,12 +463,15 @@ dyndisk:
 	}
 
 	// Dump sector bitmaps
-	if (verbose > 3){
+	if (verbose > 3)
+        {
 		printf("------------------------------\n");
 		printf(" VHD Sector Bitmaps per Block\n");
 		printf("------------------------------\n");
-		for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++){
-			if (batmap[i] == 0xFFFFFFFF){
+		for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
+                {
+			if (batmap[i] == 0xFFFFFFFF)
+                        {
 				printf(" block[%d] = <...not allocated...>\n", i);
 				continue;
 			}
@@ -439,7 +479,8 @@ dyndisk:
                         {
 			    seekFile(vhdFile, be32toh(batmap[i])*MT_SECS, SEEK_FROM_START);
                         }
-                        catch {
+                        catch
+                        {
 				perror("lseek");
 				fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
 				return(1);
@@ -455,8 +496,10 @@ dyndisk:
 			}
 
 			printf(" block[%d] sector bitmap =", i);
-			for (j=0; j<MT_SECS; j++){
-				if (!(j%32)){
+			for (j=0; j<MT_SECS; j++)
+                        {
+				if (!(j%32))
+                                {
 					printf("\n ");
 				}
 				printf("%02hhX", secbitmap[j]);
