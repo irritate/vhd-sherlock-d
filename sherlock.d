@@ -164,6 +164,18 @@ int main(string[] args)
             fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0].ptr, args[optind].ptr);
             return(1);
 	}
+        scope(exit)
+        {
+            if (verbose)
+            {
+                writeln("Closing VHD file...");
+            }
+            closeFile(vhdFile);
+            if (verbose)
+            {
+                writeln("...ok");
+            }
+        }
 	if (verbose){
 		printf("...ok\n\n");
 	}
@@ -181,13 +193,11 @@ int main(string[] args)
                 catch
                 {
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-			closeFile(vhdFile);
 			return(1);
 		}
 		if (vhd_footer_copy.cookie != "conectix"){
 			fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-			closeFile(vhdFile);
 			return(1);
 		}
                 vhd_footer = vhd_footer_copy;
@@ -214,7 +224,6 @@ int main(string[] args)
                     perror("lseek");
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
 			fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the footer.\n");
-			closeFile(vhdFile);
 			return(1);
 		}
 		if (verbose){
@@ -228,14 +237,12 @@ int main(string[] args)
                 catch
                 {
 			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
-			closeFile(vhdFile);
 			return(1);
 		}
 
 		if (vhd_footer.cookie != "conectix"){
 			fprintf(stderr.getFP(), "Corrupt disk detected after reading VHD footer.\n");
 			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-			closeFile(vhdFile);
 			return(1);
 		}
 		if (verbose){
@@ -289,7 +296,6 @@ dyndisk:
         catch {
 		perror("lseek");
 		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the file start.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (verbose){
@@ -303,13 +309,11 @@ dyndisk:
         catch
         {
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (vhd_footer_copy.cookie != "conectix"){
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (verbose){
@@ -332,13 +336,11 @@ dyndisk:
         catch
         {
 		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (vhd_dyndiskhdr.cookie != "cxsparse"){
 		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
 		fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (verbose){
@@ -391,7 +393,6 @@ dyndisk:
         catch {
 		perror("lseek");
 		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (verbose){
@@ -404,7 +405,6 @@ dyndisk:
         }
         catch {
 		fprintf(stderr.getFP(), "Error reading batmap.\n");
-		closeFile(vhdFile);
 		return(1);
 	}
 	if (verbose){
@@ -442,7 +442,6 @@ dyndisk:
                         catch {
 				perror("lseek");
 				fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
-				closeFile(vhdFile);
 				return(1);
 			}
                         try
@@ -452,7 +451,6 @@ dyndisk:
                         catch
                         {
 				fprintf(stderr.getFP(), "Error reading sector bitmap (batmap[%d] at 0x%016X.\n", i, be32toh(batmap[i]));
-				closeFile(vhdFile);
 				return(1);
 			}
 
@@ -473,6 +471,5 @@ dyndisk:
 
 outlabel:
 	// Close file descriptor and return success
-	closeFile(vhdFile);
 	return(0);
 }
