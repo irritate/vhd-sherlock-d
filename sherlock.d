@@ -59,7 +59,7 @@ uint be32toh(uint x)
     {
         ubyte[4] bytes;
         uint val;
-    }; 
+    } 
     u uval;
     uval.val = x;
     debug(endian) writefln("be32toh: %s", x);
@@ -97,8 +97,8 @@ int main(string[] args)
         FileType        vhdFile;                // VHD file
 	VHDFooter	vhd_footer_copy;	// VHD footer copy (beginning of file)
 	VHDDynamicDiskHeader	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
-	u_int32_t	batmap[];		// Block allocation table map
-	char		secbitmap[MT_SECS];	// Sector bitmap temporary buffer
+	u_int32_t[]     batmap;		// Block allocation table map
+	char[MT_SECS]	secbitmap;	// Sector bitmap temporary buffer
 	VHDFooter	vhd_footer;		// VHD footer (end of file)
 	char		copyonly = 0;
 
@@ -263,13 +263,13 @@ int main(string[] args)
 				printf("===> Dynamic hard disk detected.\n...ok\n\n");
 			}
 			goto dyndisk;
-			break;
+			//break;
 		case 4:
 			if (verbose){
 				printf("===> Differencing hard disk detected.\n...ok\n\n");
 			}
 			goto dyndisk;
-			break;
+			//break;
 		default:
 			printf("===> Unknown VHD disk type: %d\n", vhd_footer.disktype);
 			break;

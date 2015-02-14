@@ -64,7 +64,6 @@ FileType openFile(string fileName)
                 }
             }
             throw new Exception("Failed to open file!");
-            return null;
         }
 
         return hFile;
@@ -87,7 +86,7 @@ void seekFile(FileType file, long offset, int method)
                 int low;
                 int high;
             }
-        };
+        }
         u uval;
         uval.val = offset;
         //writefln("offset: %s", offset);
