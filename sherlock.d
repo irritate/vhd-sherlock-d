@@ -112,7 +112,10 @@ int main(string[] args)
 	// Fetch arguments
         bool help;
         bool copy;
-        getopt(args, "h", &help, "v+", &verbose, "c", &copy);
+        // Without "bundling", you have to pass multiple -v separately.
+        getopt(args,
+               std.getopt.config.bundling,
+               "h", &help, "v+", &verbose, "c", &copy);
 
         if (help)
         {
