@@ -145,7 +145,7 @@ void readStruct(T)(FileType file, out T structToFill)
         ReadFile(file, &structToFill, structToFill.sizeof, &numRead, null);
         if (numRead != structToFill.sizeof)
         {
-            //fprintf(stderr.getFP(), "Expecting %d bytes. Read %d bytes.\n", structToFill.sizeof, numRead);
+            //stderr.writefln("Expecting %d bytes. Read %d bytes.", structToFill.sizeof, numRead);
             throw new Exception("Didn't read a full struct!");
         }
     }

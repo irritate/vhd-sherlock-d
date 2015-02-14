@@ -121,7 +121,7 @@ int main(string[] args)
         // Read VHD footer copy only
         if (copyonly)
         {
-            fprintf(stderr.getFP(), "Error! -c can only be used once.\n");
+            stderr.writeln("Error! -c can only be used once.");
             usage(args[0]);
             return(1);
         }
@@ -156,7 +156,7 @@ int main(string[] args)
     catch (Exception e)
     {
         perror("open");
-        fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0].ptr, args[optind].ptr);
+        stderr.writefln("%s: Error opening VHD file \"%s\".", args[0], args[optind]);
         return(1);
     }
     scope(exit)
@@ -189,13 +189,13 @@ int main(string[] args)
         }
         catch
         {
-            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
+            stderr.writeln("Corrupt disk detected whilst reading VHD footer copy.");
             return(1);
         }
         if (vhd_footer_copy.cookie != "conectix")
         {
-            fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
-            fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+            stderr.writeln("Corrupt disk detect whilst reading VHD footer copy.");
+            stderr.writeln("Expected cookie (\"conectix\") missing or corrupt.");
             return(1);
         }
         vhd_footer = vhd_footer_copy;
@@ -225,8 +225,8 @@ int main(string[] args)
         {
             writeln(e);
             perror("lseek");
-            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
-            fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the footer.\n");
+            stderr.writeln("Corrupt disk detected whilst reading VHD footer.");
+            stderr.writeln("Error repositioning VHD descriptor to the footer.");
             return(1);
         }
         if (verbose)
@@ -240,14 +240,14 @@ int main(string[] args)
         }
         catch
         {
-            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
+            stderr.writeln("Corrupt disk detected whilst reading VHD footer.");
             return(1);
         }
 
         if (vhd_footer.cookie != "conectix")
         {
-            fprintf(stderr.getFP(), "Corrupt disk detected after reading VHD footer.\n");
-            fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+            stderr.writeln("Corrupt disk detected after reading VHD footer.");
+            stderr.writeln("Expected cookie (\"conectix\") missing or corrupt.");
             return(1);
         }
         if (verbose)
@@ -325,7 +325,7 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
     catch
     {
         perror("lseek");
-        fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the file start.\n");
+        stderr.writeln("Error repositioning VHD descriptor to the file start.");
         return(1);
     }
     if (verbose)
@@ -339,13 +339,13 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
     }
     catch
     {
-        fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
+        stderr.writeln("Corrupt disk detected whilst reading VHD footer copy.");
         return(1);
     }
     if (vhd_footer_copy.cookie != "conectix")
     {
-        fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
-        fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+        stderr.writeln("Corrupt disk detect whilst reading VHD footer copy.");
+        stderr.writeln("Expected cookie (\"conectix\") missing or corrupt.");
         return(1);
     }
     if (verbose)
@@ -370,13 +370,13 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
     }
     catch
     {
-        fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
+        stderr.writeln("Corrupt disk detected whilst reading VHD Dynamic Disk Header.");
         return(1);
     }
     if (vhd_dyndiskhdr.cookie != "cxsparse")
     {
-        fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
-        fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
+        stderr.writeln("Corrupt disk detect whilst reading Dynamic Disk Header.");
+        stderr.writeln("Expected cookie (\"cxsparse\") missing or corrupt.");
         return(1);
     }
     if (verbose)
@@ -434,7 +434,7 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
     catch
     {
         perror("lseek");
-        fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
+        stderr.writefln("Error repositioning VHD descriptor to batmap at 0x%016llx", vhd_footer_copy.dataoffset);
         return(1);
     }
     if (verbose)
@@ -448,7 +448,7 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
     }
     catch
     {
-        fprintf(stderr.getFP(), "Error reading batmap.\n");
+        stderr.writeln("Error reading batmap.");
         return(1);
     }
     if (verbose)
@@ -491,7 +491,7 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
             catch
             {
                 perror("lseek");
-                fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
+                stderr.writefln("Error repositioning VHD descriptor to batmap[%d] at 0x%016X", i, be32toh(batmap[i]));
                 return(1);
             }
             try
@@ -500,7 +500,7 @@ int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd
             }
             catch
             {
-                fprintf(stderr.getFP(), "Error reading sector bitmap (batmap[%d] at 0x%016X.\n", i, be32toh(batmap[i]));
+                stderr.writefln("Error reading sector bitmap (batmap[%d] at 0x%016X.", i, be32toh(batmap[i]));
                 return(1);
             }
 
