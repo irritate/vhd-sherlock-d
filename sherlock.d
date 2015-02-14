@@ -106,6 +106,9 @@ int main(string[] args)
 	int		verbose = 0;		// Verbose level
 	int		i, j;			// Temporary integers
 
+        // Declared early otherwise "goto skips declaration" error.
+        int numEntries;
+
 	// Fetch arguments
         bool help;
         bool copy;
@@ -155,7 +158,7 @@ int main(string[] args)
         catch (Exception e)
         {
             perror("open");
-            fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0], args[optind]);
+            fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0].ptr, args[optind].ptr);
             return(1);
 	}
 	if (verbose){
@@ -351,7 +354,7 @@ dyndisk:
 	if (verbose){
 		printf("Allocating batmap...\n");
 	}
-        int numEntries = vhd_dyndiskhdr.maxtabentries;
+        numEntries = vhd_dyndiskhdr.maxtabentries;
         if (numEntries % 128 != 0)
         {
             // "The BAT is always extended to a sector boundary."

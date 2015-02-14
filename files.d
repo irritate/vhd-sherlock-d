@@ -115,7 +115,7 @@ void seekFile(FileType file, long offset, int method)
     }
 }
 
-void readArray(T)(FileType file, ref T[] arrayToFill)
+void readArray(T)(FileType file, T[] arrayToFill)
 {
     version(WindowsLargeFile)
     {
