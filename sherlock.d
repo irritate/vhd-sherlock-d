@@ -107,6 +107,7 @@ int main(string[] args)
     bool copy;
     // Without "bundling", you have to pass multiple -v separately.
     getopt(args,
+           std.getopt.config.passThrough,
            std.getopt.config.bundling,
            "h", &help, "v+", &verbose, "c", &copy);
 
