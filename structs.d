@@ -115,19 +115,19 @@ align(1): // Packed
 // Extract cylinder from the 4 byte disk geometry field
 ushort dg2cyli(int diskgeom)
 {
-	return(cast(ushort)((diskgeom&0xFFFF0000)>>16));
+    return(cast(ushort)((diskgeom&0xFFFF0000)>>16));
 }
 
 // Extract heads from the 4 byte disk geometry field
-ubyte	dg2head(int diskgeom)
+ubyte dg2head(int diskgeom)
 {
-	return(cast(ubyte)((diskgeom&0x0000FF00)>>8));
+    return(cast(ubyte)((diskgeom&0x0000FF00)>>8));
 }
 
 // Extract sectors per track/cylinder from the 4 byte disk geometry field
-ubyte	dg2sptc(int diskgeom)
+ubyte dg2sptc(int diskgeom)
 {
-	return(cast(ubyte)((diskgeom&0x000000FF)));
+    return(cast(ubyte)((diskgeom&0x000000FF)));
 }
 
 // Convert a disk size to a human readable static string
@@ -135,8 +135,8 @@ string size2h(ulong disksize)
 {
     // Local variables
     string str;
-    ushort    div = 0;
-    ulong    rem = 0;
+    ushort div = 0;
+    ulong rem = 0;
 
     // Loop dividing disksize
     while (((disksize / 1024) > 0) && (div < 4))
@@ -233,71 +233,71 @@ string dt2str(int disktype)
     return result;
 }
 
-void	dump_vhdfooter(VHDFooter *foot)
+void dump_vhdfooter(VHDFooter *foot)
 {
-	// Local variables
+    // Local variables
 
-	// Print a footer
-	printf("------------------------\n");
-	printf(" VHD Footer (%d bytes)\n", VHDFooter.sizeof);
-	printf("------------------------\n");
-	writefln(" Cookie              = %s",             cast(string)foot.cookie);
-	writefln(" Features            = 0x%08X",         foot.features);
-	printf(" File Format Version = 0x%08X\n",         foot.ffversion);
-	printf(" Data Offset         = 0x%016llx\n",      foot.dataoffset);
-	printf(" Time Stamp          = 0x%08X\n",         foot.timestamp);
-	//printf(" Creator Application = 0x%08X\n",       foot.creatorapp);
-	writefln(" Creator Application = %s",         cast(string)(foot.creatorapp));
+    // Print a footer
+    printf("------------------------\n");
+    printf(" VHD Footer (%d bytes)\n", VHDFooter.sizeof);
+    printf("------------------------\n");
+    writefln(" Cookie              = %s",             cast(string)foot.cookie);
+    writefln(" Features            = 0x%08X",         foot.features);
+    printf(" File Format Version = 0x%08X\n",         foot.ffversion);
+    printf(" Data Offset         = 0x%016llx\n",      foot.dataoffset);
+    printf(" Time Stamp          = 0x%08X\n",         foot.timestamp);
+    //printf(" Creator Application = 0x%08X\n",       foot.creatorapp);
+    writefln(" Creator Application = %s",         cast(string)(foot.creatorapp));
         // d2v == disk2vhd
-	printf(" Creator Version     = 0x%08X\n",         foot.creatorver);
-	printf(" Creator Host OS     = 0x%08X\n",         foot.creatorhos);
-	printf(" Original Size       = 0x%016llx\n",      foot.origsize);
-	writefln("                     = %s",             size2h(foot.origsize));
-	printf(" Current Size        = 0x%016llx\n",      foot.currsize);
-	writefln("                     = %s",             size2h(foot.currsize));
-	printf(" Disk Geometry       = 0x%08X\n",         foot.diskgeom);
-	printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
-	//printf("           Cylinders = %hu\n",            foot.diskgeom.cylinders);
-	printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
-	//printf("               Heads = %hhu\n",           foot.diskgeom.heads);
-	printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
-	//printf("       Sectors/Track = %hhu\n",           foot.diskgeom.sectorsPerTrack);
-	printf(" Disk Type           = 0x%08X\n",         foot.disktype);
-	writefln("                     = %s",             dt2str(foot.disktype));
-	printf(" Checksum            = 0x%08X\n",         foot.checksum);
-	writefln(" Unique ID           = %s",             UUID(foot.uniqueid));
-	printf(" Saved State         = 0x%02X\n",         foot.savedst);
-	printf(" Reserved            = <...427 bytes...>\n");
-	printf("===============================================\n");
+    printf(" Creator Version     = 0x%08X\n",         foot.creatorver);
+    printf(" Creator Host OS     = 0x%08X\n",         foot.creatorhos);
+    printf(" Original Size       = 0x%016llx\n",      foot.origsize);
+    writefln("                     = %s",             size2h(foot.origsize));
+    printf(" Current Size        = 0x%016llx\n",      foot.currsize);
+    writefln("                     = %s",             size2h(foot.currsize));
+    printf(" Disk Geometry       = 0x%08X\n",         foot.diskgeom);
+    printf("           Cylinders = %hu\n",            dg2cyli(foot.diskgeom));
+    //printf("           Cylinders = %hu\n",            foot.diskgeom.cylinders);
+    printf("               Heads = %hhu\n",           dg2head(foot.diskgeom));
+    //printf("               Heads = %hhu\n",           foot.diskgeom.heads);
+    printf("       Sectors/Track = %hhu\n",           dg2sptc(foot.diskgeom));
+    //printf("       Sectors/Track = %hhu\n",           foot.diskgeom.sectorsPerTrack);
+    printf(" Disk Type           = 0x%08X\n",         foot.disktype);
+    writefln("                     = %s",             dt2str(foot.disktype));
+    printf(" Checksum            = 0x%08X\n",         foot.checksum);
+    writefln(" Unique ID           = %s",             UUID(foot.uniqueid));
+    printf(" Saved State         = 0x%02X\n",         foot.savedst);
+    printf(" Reserved            = <...427 bytes...>\n");
+    printf("===============================================\n");
 }
 
-void	dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr)
+void dump_vhd_dyndiskhdr(VHDDynamicDiskHeader *ddhdr)
 {
-	// Local variables
+    // Local variables
 
-	// Print a footer
-	printf("--------------------------------------\n");
-	printf(" VHD Dynamic Disk Header (%d bytes)\n", VHDDynamicDiskHeader.sizeof);
-	printf("--------------------------------------\n");
-	writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
-	printf(" Data Offset         = 0x%016llx\n",      ddhdr.dataoffset);
-	printf(" Table Offset        = 0x%016llx\n",      ddhdr.tableoffset);
-	printf(" Header Version      = 0x%08X\n",         ddhdr.headerversion);
-	printf(" Max Table Entries   = 0x%08X\n",         ddhdr.maxtabentries);
-	printf(" Block Size          = 0x%08X\n",         ddhdr.blocksize);
-	printf(" Checksum            = 0x%08X\n",         ddhdr.checksum);
-	writefln(" Parent UUID         = %s",             UUID(ddhdr.parentuuid));
-	printf(" Parent TS           = 0x%08X\n",         ddhdr.parentts);
-	printf("                       %u (10)\n",        ddhdr.parentts);
-	printf(" Reserved            = <...4 bytes...>\n");
-	printf(" Parent Unicode Name = <...512 bytes...>\n");
-	printf(" Parent Loc Entry 1  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 2  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 3  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 4  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 5  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 6  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 7  = <...24 bytes...>\n");
-	printf(" Parent Loc Entry 8  = <...24 bytes...>\n");
-	printf("===============================================\n");
+    // Print a footer
+    printf("--------------------------------------\n");
+    printf(" VHD Dynamic Disk Header (%d bytes)\n", VHDDynamicDiskHeader.sizeof);
+    printf("--------------------------------------\n");
+    writefln(" Cookie              = %s\n",             cast(string)ddhdr.cookie);
+    printf(" Data Offset         = 0x%016llx\n",      ddhdr.dataoffset);
+    printf(" Table Offset        = 0x%016llx\n",      ddhdr.tableoffset);
+    printf(" Header Version      = 0x%08X\n",         ddhdr.headerversion);
+    printf(" Max Table Entries   = 0x%08X\n",         ddhdr.maxtabentries);
+    printf(" Block Size          = 0x%08X\n",         ddhdr.blocksize);
+    printf(" Checksum            = 0x%08X\n",         ddhdr.checksum);
+    writefln(" Parent UUID         = %s",             UUID(ddhdr.parentuuid));
+    printf(" Parent TS           = 0x%08X\n",         ddhdr.parentts);
+    printf("                       %u (10)\n",        ddhdr.parentts);
+    printf(" Reserved            = <...4 bytes...>\n");
+    printf(" Parent Unicode Name = <...512 bytes...>\n");
+    printf(" Parent Loc Entry 1  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 2  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 3  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 4  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 5  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 6  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 7  = <...24 bytes...>\n");
+    printf(" Parent Loc Entry 8  = <...24 bytes...>\n");
+    printf("===============================================\n");
 }

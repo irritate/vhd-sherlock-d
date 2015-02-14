@@ -59,7 +59,7 @@ uint be32toh(uint x)
     {
         ubyte[4] bytes;
         uint val;
-    } 
+    }
     u uval;
     uval.val = x;
     debug(endian) writefln("be32toh: %s", x);
@@ -82,437 +82,437 @@ void usage(string progname)
     writef("\n%s\n", MT_PROGNAME);
     foreach (i; 0 .. MT_PROGNAME_LEN) { write("-"); }
     writefln("\nUsage: %s [ -h ] [ -v[v] ] <file>", progname);
-    writefln("       -h		Print this help message and quit.");
-    writefln("       -v		Increase verbose level (may be used multiple times).");
-    writefln("       -c		Read VHD footer *copy* only (for corrupted VHDs with no footer)");
-    writefln("       <file>		VHD file to examine");
+    writefln("       -h        Print this help message and quit.");
+    writefln("       -v        Increase verbose level (may be used multiple times).");
+    writefln("       -c        Read VHD footer *copy* only (for corrupted VHDs with no footer)");
+    writefln("       <file>        VHD file to examine");
 }
 
 // Main function
 int main(string[] args)
 {
-	// Local variables
+    // Local variables
 
-	// VHD File specific
-        FileType        vhdFile;                // VHD file
-	VHDFooter	vhd_footer_copy;	// VHD footer copy (beginning of file)
-	VHDDynamicDiskHeader	vhd_dyndiskhdr;		// VHD Dynamic Disk Header
-	u_int32_t[]     batmap;		// Block allocation table map
-	char[MT_SECS]	secbitmap;	// Sector bitmap temporary buffer
-	VHDFooter	vhd_footer;		// VHD footer (end of file)
-	char		copyonly = 0;
+    // VHD File specific
+    FileType             vhdFile;         // VHD file
+    VHDFooter            vhd_footer_copy; // VHD footer copy (beginning of file)
+    VHDDynamicDiskHeader vhd_dyndiskhdr;  // VHD Dynamic Disk Header
+    u_int32_t[]          batmap;          // Block allocation table map
+    char[MT_SECS]        secbitmap;       // Sector bitmap temporary buffer
+    VHDFooter            vhd_footer;      // VHD footer (end of file)
+    char copyonly = 0;
 
-	// General
-	int		verbose = 0;		// Verbose level
-	int		i, j;			// Temporary integers
+    // General
+    int verbose = 0; // Verbose level
+    int i, j;        // Temporary integers
 
-        // Declared early otherwise "goto skips declaration" error.
-        int numEntries;
+    // Declared early otherwise "goto skips declaration" error.
+    int numEntries;
 
-	// Fetch arguments
-        bool help;
-        bool copy;
-        // Without "bundling", you have to pass multiple -v separately.
-        getopt(args,
-               std.getopt.config.bundling,
-               "h", &help, "v+", &verbose, "c", &copy);
+    // Fetch arguments
+    bool help;
+    bool copy;
+    // Without "bundling", you have to pass multiple -v separately.
+    getopt(args,
+           std.getopt.config.bundling,
+           "h", &help, "v+", &verbose, "c", &copy);
 
-        if (help)
+    if (help)
+    {
+        // Print help
+        usage(args[0]);
+        return(0);
+    }
+    else if (copy)
+    {
+        // Read VHD footer copy only
+        if (copyonly)
         {
-                // Print help
-                usage(args[0]);
-                return(0);
+            fprintf(stderr.getFP(), "Error! -c can only be used once.\n");
+            usage(args[0]);
+            return(1);
         }
-        else if (copy)
-        {
-                // Read VHD footer copy only
-                if (copyonly)
-                {
-                        fprintf(stderr.getFP(), "Error! -c can only be used once.\n");
-                        usage(args[0]);
-                        return(1);
-                }
-                copyonly = 1;
-        }
+        copyonly = 1;
+    }
 
+    if (verbose)
+    {
+        writefln("verbose = %d", verbose);
+    }
+
+    //temp
+    int optind = args.length - 1;
+    // Validate there is a filename
+    if (optind != 1)
+    {
+        // Print help
+        writeln("error: filename expected");
+        usage(args[0]);
+        return(0);
+    }
+
+    // Open VHD file
+    try
+    {
         if (verbose)
         {
-            writefln("verbose = %d", verbose);
+            writeln("Opening VHD file...");
         }
-
-        //temp
-        int optind = args.length - 1;
-	// Validate there is a filename
-	if (optind != 1)
+        vhdFile = openFile(args[optind]);
+    }
+    catch (Exception e)
+    {
+        perror("open");
+        fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0].ptr, args[optind].ptr);
+        return(1);
+    }
+    scope(exit)
+    {
+        if (verbose)
         {
-		// Print help
-                writeln("error: filename expected");
-		usage(args[0]);
-		return(0);
-	}
-
-	// Open VHD file
-        try
-        {
-            if (verbose)
-            {
-                writeln("Opening VHD file...");
-            }
-            vhdFile = openFile(args[optind]);
+            writeln("Closing VHD file...");
         }
-        catch (Exception e)
+        closeFile(vhdFile);
+        if (verbose)
         {
-            perror("open");
-            fprintf(stderr.getFP(), "%s: Error opening VHD file \"%s\".\n", args[0].ptr, args[optind].ptr);
-            return(1);
-	}
-        scope(exit)
-        {
-            if (verbose)
-            {
-                writeln("Closing VHD file...");
-            }
-            closeFile(vhdFile);
-            if (verbose)
-            {
-                writeln("...ok");
-            }
+            writeln("...ok");
         }
-	if (verbose)
-        {
-		printf("...ok\n\n");
-	}
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+    }
 
-	// Read the VHD footer
-	if (copyonly)
+    // Read the VHD footer
+    if (copyonly)
+    {
+        if (verbose)
         {
-		if (verbose)
-                {
-                    printf("Reading VHD footer copy exclusively...\n");
-		}
-                try
-                {
-                    readStruct(vhdFile, vhd_footer_copy);
-                }
-                catch
-                {
-			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-			return(1);
-		}
-		if (vhd_footer_copy.cookie != "conectix")
-                {
-			fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
-			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-			return(1);
-		}
-                vhd_footer = vhd_footer_copy;
-		if (verbose)
-                {
-			printf("...ok\n\n");
-		}
-                //if (verbose > 1)
-                //{
-                //    dump_vhdfooter(&vhd_footer);
-                //}
-	}
-        else
-        {
-		if (verbose)
-                {
-			printf("Positioning descriptor to VHD footer...\n");
-		}
-                try
-                {
-                    // Seek to footer at the end of the file.
-                    int pos = -(cast(int)vhd_footer.sizeof);
-                    //writeln(pos);
-                    seekFile(vhdFile, pos, SEEK_FROM_END);
-                }
-                catch (Exception e)
-                {
-                    writeln(e);
-                    perror("lseek");
-			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
-			fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the footer.\n");
-			return(1);
-		}
-		if (verbose)
-                {
-			printf("...ok\n\n");
-			printf("Reading VHD footer...\n");
-		}
-                try
-                {
-                    readStruct(vhdFile, vhd_footer);
-                }
-                catch
-                {
-			fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
-			return(1);
-		}
-
-		if (vhd_footer.cookie != "conectix")
-                {
-			fprintf(stderr.getFP(), "Corrupt disk detected after reading VHD footer.\n");
-			fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-			return(1);
-		}
-		if (verbose)
-                {
-			printf("...ok\n\n");
-		}
-
-		// Dump footer
-		if (verbose > 1)
-                {
-			dump_vhdfooter(&vhd_footer);
-		}
-	}
-
-	// Check type of disk
-	if (verbose)
-        {
-		printf("Detecting disk type...\n");
-	}
-	switch(vhd_footer.disktype)
-        {
-		case 2:
-			if (verbose)
-                        {
-				printf("===> Fixed hard disk detected.\n...ok\n\n");
-			}
-			break;
-		case 3:
-			if (verbose)
-                        {
-				printf("===> Dynamic hard disk detected.\n...ok\n\n");
-			}
-			goto dyndisk;
-			//break;
-		case 4:
-			if (verbose)
-                        {
-				printf("===> Differencing hard disk detected.\n...ok\n\n");
-			}
-			goto dyndisk;
-			//break;
-		default:
-			printf("===> Unknown VHD disk type: %d\n", vhd_footer.disktype);
-			break;
-	}
-	goto outlabel;
-
-dyndisk:
-	// Read the VHD footer copy
-	if (verbose)
-        {
-		printf("Positioning descriptor to read VHD footer copy...\n");
-	}
-        try
-        {
-	    //vhdFile.rewind();
-	    seekFile(vhdFile, 0, SEEK_FROM_START);
+            printf("Reading VHD footer copy exclusively...\n");
         }
-        catch
-        {
-		perror("lseek");
-		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the file start.\n");
-		return(1);
-	}
-	if (verbose)
-        {
-		printf("...ok\n\n");
-		printf("Reading VHD footer copy...\n");
-	}
         try
         {
             readStruct(vhdFile, vhd_footer_copy);
         }
         catch
         {
-		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
-		return(1);
-	}
-	if (vhd_footer_copy.cookie != "conectix")
+            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
+            return(1);
+        }
+        if (vhd_footer_copy.cookie != "conectix")
         {
-		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
-		fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
-		return(1);
-	}
-	if (verbose)
+            fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
+            fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+            return(1);
+        }
+        vhd_footer = vhd_footer_copy;
+        if (verbose)
         {
-		printf("...ok\n\n");
-	}
-
-	// Dump footer copy
-	if (verbose > 1)
+            printf("...ok\n\n");
+        }
+        //if (verbose > 1)
+        //{
+        //    dump_vhdfooter(&vhd_footer);
+        //}
+    }
+    else
+    {
+        if (verbose)
         {
-		dump_vhdfooter(&vhd_footer);
-	}
-
-	// Read the VHD dynamic disk header
-	if (verbose)
-        {
-		printf("Reading VHD dynamic disk header...\n");
-	}
+            printf("Positioning descriptor to VHD footer...\n");
+        }
         try
         {
-            readStruct(vhdFile, vhd_dyndiskhdr);
+            // Seek to footer at the end of the file.
+            int pos = -(cast(int)vhd_footer.sizeof);
+            //writeln(pos);
+            seekFile(vhdFile, pos, SEEK_FROM_END);
+        }
+        catch (Exception e)
+        {
+            writeln(e);
+            perror("lseek");
+            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
+            fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the footer.\n");
+            return(1);
+        }
+        if (verbose)
+        {
+            printf("...ok\n\n");
+            printf("Reading VHD footer...\n");
+        }
+        try
+        {
+            readStruct(vhdFile, vhd_footer);
         }
         catch
         {
-		fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
-		return(1);
-	}
-	if (vhd_dyndiskhdr.cookie != "cxsparse")
-        {
-		fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
-		fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
-		return(1);
-	}
-	if (verbose)
-        {
-		printf("...ok\n\n");
-	}
+            fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer.\n");
+            return(1);
+        }
 
-	// Dump VHD dynamic disk header
-	if (verbose > 1)
+        if (vhd_footer.cookie != "conectix")
         {
-		dump_vhd_dyndiskhdr(&vhd_dyndiskhdr);
-	}
+            fprintf(stderr.getFP(), "Corrupt disk detected after reading VHD footer.\n");
+            fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+            return(1);
+        }
+        if (verbose)
+        {
+            printf("...ok\n\n");
+        }
 
-        //TODO: Better diff
-        assert(vhd_footer == vhd_footer_copy);
+        // Dump footer
+        if (verbose > 1)
+        {
+            dump_vhdfooter(&vhd_footer);
+        }
+    }
 
-	// Allocate Batmap
-	if (verbose)
-        {
-		printf("Allocating batmap...\n");
-	}
-        numEntries = vhd_dyndiskhdr.maxtabentries;
-        if (numEntries % 128 != 0)
-        {
-            // "The BAT is always extended to a sector boundary."
-            // but it's not really necessary to print it, since the maxtabentries
-            // is the max usable, and it contains sector offsets into
-            // to the data blocks.
+    // Check type of disk
+    if (verbose)
+    {
+        printf("Detecting disk type...\n");
+    }
+    switch(vhd_footer.disktype)
+    {
+        case 2:
             if (verbose)
             {
-                writeln("Extending BAT size to a sector boundary...");
-                writef("from %d (%d bytes) ", numEntries, 4*numEntries);
+                printf("===> Fixed hard disk detected.\n...ok\n\n");
             }
-            numEntries += (128 - (numEntries % 128));
+            break;
+        case 3:
             if (verbose)
             {
-                writefln("to %d (%d bytes)", numEntries, 4*numEntries);
+                printf("===> Dynamic hard disk detected.\n...ok\n\n");
             }
-        }
-        batmap = new u_int32_t[numEntries];
-	if (verbose)
-        {
-		printf("...ok\n\n");
-	}
+            goto dyndisk;
+            //break;
+        case 4:
+            if (verbose)
+            {
+                printf("===> Differencing hard disk detected.\n...ok\n\n");
+            }
+            goto dyndisk;
+            //break;
+        default:
+            printf("===> Unknown VHD disk type: %d\n", vhd_footer.disktype);
+            break;
+    }
+    goto outlabel;
 
-	// Read batmap
-	if (verbose)
-        {
-		printf("Positioning descriptor to read VHD batmap...\n");
-	}
-        try
-        {
-	    seekFile(vhdFile, vhd_dyndiskhdr.tableoffset, SEEK_FROM_START);
-        }
-        catch
-        {
-		perror("lseek");
-		fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
-		return(1);
-	}
-	if (verbose)
-        {
-		printf("...ok\n\n");
-		printf("Reading VHD batmap...\n");
-	}
-        try
-        {
-            readArray(vhdFile, batmap[]);
-        }
-        catch
-        {
-		fprintf(stderr.getFP(), "Error reading batmap.\n");
-		return(1);
-	}
-	if (verbose)
-        {
-		printf("...ok\n\n");
-	}
+dyndisk:
+    // Read the VHD footer copy
+    if (verbose)
+    {
+        printf("Positioning descriptor to read VHD footer copy...\n");
+    }
+    try
+    {
+        //vhdFile.rewind();
+        seekFile(vhdFile, 0, SEEK_FROM_START);
+    }
+    catch
+    {
+        perror("lseek");
+        fprintf(stderr.getFP(), "Error repositioning VHD descriptor to the file start.\n");
+        return(1);
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+        printf("Reading VHD footer copy...\n");
+    }
+    try
+    {
+        readStruct(vhdFile, vhd_footer_copy);
+    }
+    catch
+    {
+        fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD footer copy.\n");
+        return(1);
+    }
+    if (vhd_footer_copy.cookie != "conectix")
+    {
+        fprintf(stderr.getFP(), "Corrupt disk detect whilst reading VHD footer copy.\n");
+        fprintf(stderr.getFP(), "Expected cookie (\"conectix\") missing or corrupt.\n");
+        return(1);
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+    }
 
-	// Dump Batmap
-	if (verbose > 2)
+    // Dump footer copy
+    if (verbose > 1)
+    {
+        dump_vhdfooter(&vhd_footer);
+    }
+
+    // Read the VHD dynamic disk header
+    if (verbose)
+    {
+        printf("Reading VHD dynamic disk header...\n");
+    }
+    try
+    {
+        readStruct(vhdFile, vhd_dyndiskhdr);
+    }
+    catch
+    {
+        fprintf(stderr.getFP(), "Corrupt disk detected whilst reading VHD Dynamic Disk Header.\n");
+        return(1);
+    }
+    if (vhd_dyndiskhdr.cookie != "cxsparse")
+    {
+        fprintf(stderr.getFP(), "Corrupt disk detect whilst reading Dynamic Disk Header.\n");
+        fprintf(stderr.getFP(), "Expected cookie (\"cxsparse\") missing or corrupt.\n");
+        return(1);
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+    }
+
+    // Dump VHD dynamic disk header
+    if (verbose > 1)
+    {
+        dump_vhd_dyndiskhdr(&vhd_dyndiskhdr);
+    }
+
+    //TODO: Better diff
+    assert(vhd_footer == vhd_footer_copy);
+
+    // Allocate Batmap
+    if (verbose)
+    {
+        printf("Allocating batmap...\n");
+    }
+    numEntries = vhd_dyndiskhdr.maxtabentries;
+    if (numEntries % 128 != 0)
+    {
+        // "The BAT is always extended to a sector boundary."
+        // but it's not really necessary to print it, since the maxtabentries
+        // is the max usable, and it contains sector offsets into
+        // to the data blocks.
+        if (verbose)
         {
-		printf("----------------------------\n");
-		printf(" VHD Block Allocation Table (%u / %u entries)\n", vhd_dyndiskhdr.maxtabentries, batmap.length);
-		printf("----------------------------\n");
-		//for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
-                foreach(k, x; batmap)
+            writeln("Extending BAT size to a sector boundary...");
+            writef("from %d (%d bytes) ", numEntries, 4*numEntries);
+        }
+        numEntries += (128 - (numEntries % 128));
+        if (verbose)
+        {
+            writefln("to %d (%d bytes)", numEntries, 4*numEntries);
+        }
+    }
+    batmap = new u_int32_t[numEntries];
+    if (verbose)
+    {
+        printf("...ok\n\n");
+    }
+
+    // Read batmap
+    if (verbose)
+    {
+        printf("Positioning descriptor to read VHD batmap...\n");
+    }
+    try
+    {
+        seekFile(vhdFile, vhd_dyndiskhdr.tableoffset, SEEK_FROM_START);
+    }
+    catch
+    {
+        perror("lseek");
+        fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap at 0x%016llx\n", vhd_footer_copy.dataoffset);
+        return(1);
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+        printf("Reading VHD batmap...\n");
+    }
+    try
+    {
+        readArray(vhdFile, batmap[]);
+    }
+    catch
+    {
+        fprintf(stderr.getFP(), "Error reading batmap.\n");
+        return(1);
+    }
+    if (verbose)
+    {
+        printf("...ok\n\n");
+    }
+
+    // Dump Batmap
+    if (verbose > 2)
+    {
+        printf("----------------------------\n");
+        printf(" VHD Block Allocation Table (%u / %u entries)\n", vhd_dyndiskhdr.maxtabentries, batmap.length);
+        printf("----------------------------\n");
+        //for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
+        foreach(k, x; batmap)
+        {
+            //printf("batmap[%d] = 0x%08X\n", i, be32toh(batmap[i]));
+            printf("batmap[%d] = 0x%08X\n", k, be32toh(x));
+        }
+        printf("===============================================\n");
+    }
+
+    // Dump sector bitmaps
+    if (verbose > 3)
+    {
+        printf("------------------------------\n");
+        printf(" VHD Sector Bitmaps per Block\n");
+        printf("------------------------------\n");
+        for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
+        {
+            if (batmap[i] == 0xFFFFFFFF)
+            {
+                printf(" block[%d] = <...not allocated...>\n", i);
+                continue;
+            }
+            try
+            {
+                seekFile(vhdFile, be32toh(batmap[i])*MT_SECS, SEEK_FROM_START);
+            }
+            catch
+            {
+                perror("lseek");
+                fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
+                return(1);
+            }
+            try
+            {
+                readArray(vhdFile, secbitmap[]);
+            }
+            catch
+            {
+                fprintf(stderr.getFP(), "Error reading sector bitmap (batmap[%d] at 0x%016X.\n", i, be32toh(batmap[i]));
+                return(1);
+            }
+
+            printf(" block[%d] sector bitmap =", i);
+            for (j=0; j<MT_SECS; j++)
+            {
+                if (!(j%32))
                 {
-			//printf("batmap[%d] = 0x%08X\n", i, be32toh(batmap[i]));
-			printf("batmap[%d] = 0x%08X\n", k, be32toh(x));
-		}
-		printf("===============================================\n");
-	}
+                    printf("\n ");
+                }
+                printf("%02hhX", secbitmap[j]);
+            }
+            printf("\n");
+        }
 
-	// Dump sector bitmaps
-	if (verbose > 3)
-        {
-		printf("------------------------------\n");
-		printf(" VHD Sector Bitmaps per Block\n");
-		printf("------------------------------\n");
-		for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
-                {
-			if (batmap[i] == 0xFFFFFFFF)
-                        {
-				printf(" block[%d] = <...not allocated...>\n", i);
-				continue;
-			}
-                        try
-                        {
-			    seekFile(vhdFile, be32toh(batmap[i])*MT_SECS, SEEK_FROM_START);
-                        }
-                        catch
-                        {
-				perror("lseek");
-				fprintf(stderr.getFP(), "Error repositioning VHD descriptor to batmap[%d] at 0x%016X\n", i, be32toh(batmap[i]));
-				return(1);
-			}
-                        try
-                        {
-                            readArray(vhdFile, secbitmap[]);
-                        }
-                        catch
-                        {
-				fprintf(stderr.getFP(), "Error reading sector bitmap (batmap[%d] at 0x%016X.\n", i, be32toh(batmap[i]));
-				return(1);
-			}
+    }
 
-			printf(" block[%d] sector bitmap =", i);
-			for (j=0; j<MT_SECS; j++)
-                        {
-				if (!(j%32))
-                                {
-					printf("\n ");
-				}
-				printf("%02hhX", secbitmap[j]);
-			}
-			printf("\n");
-		}
-		
-	}
-
-	// Print summary
-	//printf("VHD is OK\n");
+    // Print summary
+    //printf("VHD is OK\n");
 
 outlabel:
-	// Close file descriptor and return success
-	return(0);
+    // Close file descriptor and return success
+    return(0);
 }
