@@ -96,18 +96,11 @@ int main(string[] args)
     // VHD File specific
     FileType             vhdFile;         // VHD file
     VHDFooter            vhd_footer_copy; // VHD footer copy (beginning of file)
-    VHDDynamicDiskHeader vhd_dyndiskhdr;  // VHD Dynamic Disk Header
-    u_int32_t[]          batmap;          // Block allocation table map
-    char[MT_SECS]        secbitmap;       // Sector bitmap temporary buffer
     VHDFooter            vhd_footer;      // VHD footer (end of file)
     char copyonly = 0;
 
     // General
     int verbose = 0; // Verbose level
-    int i, j;        // Temporary integers
-
-    // Declared early otherwise "goto skips declaration" error.
-    int numEntries;
 
     // Fetch arguments
     bool help;
@@ -274,6 +267,7 @@ int main(string[] args)
     {
         printf("Detecting disk type...\n");
     }
+    bool isDynamicDisk = false;
     switch(vhd_footer.disktype)
     {
         case 2:
@@ -287,22 +281,37 @@ int main(string[] args)
             {
                 printf("===> Dynamic hard disk detected.\n...ok\n\n");
             }
-            goto dyndisk;
-            //break;
+            isDynamicDisk = true;
+            break;
         case 4:
             if (verbose)
             {
                 printf("===> Differencing hard disk detected.\n...ok\n\n");
             }
-            goto dyndisk;
-            //break;
+            isDynamicDisk = true;
+            break;
         default:
             printf("===> Unknown VHD disk type: %d\n", vhd_footer.disktype);
             break;
     }
-    goto outlabel;
 
-dyndisk:
+    int result = 0;
+    if (isDynamicDisk)
+    {
+        result = HandleDynamicDisk(verbose, vhdFile, vhd_footer_copy, vhd_footer);
+    }
+
+    // Return final result code.
+    return(result);
+}
+
+int HandleDynamicDisk(const int verbose, ref FileType vhdFile, ref VHDFooter vhd_footer_copy, ref VHDFooter vhd_footer)
+{
+    // VHD File specific
+    VHDDynamicDiskHeader vhd_dyndiskhdr;  // VHD Dynamic Disk Header
+    u_int32_t[]          batmap;          // Block allocation table map
+    char[MT_SECS]        secbitmap;       // Sector bitmap temporary buffer
+
     // Read the VHD footer copy
     if (verbose)
     {
@@ -389,7 +398,7 @@ dyndisk:
     {
         printf("Allocating batmap...\n");
     }
-    numEntries = vhd_dyndiskhdr.maxtabentries;
+    int numEntries = vhd_dyndiskhdr.maxtabentries;
     if (numEntries % 128 != 0)
     {
         // "The BAT is always extended to a sector boundary."
@@ -468,7 +477,7 @@ dyndisk:
         printf("------------------------------\n");
         printf(" VHD Sector Bitmaps per Block\n");
         printf("------------------------------\n");
-        for (i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
+        for (int i=0; i<vhd_dyndiskhdr.maxtabentries; i++)
         {
             if (batmap[i] == 0xFFFFFFFF)
             {
@@ -496,7 +505,7 @@ dyndisk:
             }
 
             printf(" block[%d] sector bitmap =", i);
-            for (j=0; j<MT_SECS; j++)
+            for (int j=0; j<MT_SECS; j++)
             {
                 if (!(j%32))
                 {
@@ -512,7 +521,5 @@ dyndisk:
     // Print summary
     //printf("VHD is OK\n");
 
-outlabel:
-    // Close file descriptor and return success
-    return(0);
+    return 0;
 }
